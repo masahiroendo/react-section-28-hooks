@@ -8,7 +8,7 @@ const Search = React.memo(props => {
     <section className="search">
       <Card>
         <div className="search-input">
-          <label>Filter by Title</label>
+          <label><b>Filter by Title</b></label>
           <input type="text" />
         </div>
       </Card>
