@@ -44,6 +44,7 @@ const IngredientForm = React.memo((props) => {
           </div>
           <div className="ingredient-form__actions">
             <button type="submit">Add Ingredient</button>
+            <button className="reset">Reset form</button>
           </div>
         </form>
       </Card>

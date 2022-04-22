@@ -28,3 +28,8 @@
   justify-content: space-between;
   align-items: center;
 }
+
+.reset {
+  border: 1px solid black;
+  background-color: grey;
+}
