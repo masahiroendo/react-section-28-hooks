@@ -7,8 +7,18 @@ import Search from './Search';
 const Ingredients = () => {
   const [userIgredients, setUserIngredients] = useState([]);
 
-  const addIngredientHandler = (ingredient) => {
-    setUserIngredients((prevState) => [...prevState, { id: Math.random().toString(), ...ingredient }]);
+  const addIngredientHandler = async (ingredient) => {
+    const response = await fetch(
+      'https://react-http-13cfc-default-rtdb.europe-west1.firebasedatabase.app//ingredients.json',
+      {
+        method: 'POST',
+        body: JSON.stringify(ingredient),
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+
+    const data = await response.json();
+    setUserIngredients((prevState) => [...prevState, { id: data.name, ...ingredient }]);
   };
 
   const removeIngredientHandler = (ingredientId) => {
