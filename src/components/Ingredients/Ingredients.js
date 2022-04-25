@@ -44,7 +44,13 @@ const Ingredients = () => {
     setUserIngredients((prevState) => [...prevState, { id: data.name, ...ingredient }]);
   };
 
-  const removeIngredientHandler = (ingredientId) => {
+  const removeIngredientHandler = async (ingredientId) => {
+    await fetch(
+      `https://react-http-13cfc-default-rtdb.europe-west1.firebasedatabase.app//ingredients/${ingredientId}.json`,
+      {
+        method: 'DELETE',
+      },
+    );
     setUserIngredients((prevState) => prevState.filter((ingredient) => ingredient.id !== ingredientId));
   };
 
