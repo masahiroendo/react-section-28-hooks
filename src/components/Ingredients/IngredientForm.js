@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 
 import Card from '../UI/Card';
+import LoadingIndicator from '../UI/LoadingIndicator';
 import './IngredientForm.css';
 
 const IngredientForm = React.memo((props) => {
@@ -44,7 +45,10 @@ const IngredientForm = React.memo((props) => {
           </div>
           <div className="ingredient-form__actions">
             <button type="submit">Add Ingredient</button>
-            <button className="reset">Reset form</button>
+            {props.loading && <LoadingIndicator />}
+            <button type="button" className="reset" onClick={resetForm}>
+              Reset form
+            </button>
           </div>
         </form>
       </Card>
