@@ -1,46 +1,47 @@
 import React, { useState, useEffect, useRef } from 'react';
+import useHttp from '../../hooks/http';
 
 import Card from '../UI/Card';
+import ErrorModal from '../UI/ErrorModal';
 import LoadingIndicator from '../UI/LoadingIndicator';
 import './Search.css';
-
-const fetchIngredients = async (searchName, callback) => {
-  const query = searchName.length === 0 ? '' : `?orderBy="title"&equalTo="${searchName}"`;
-  const response = await fetch(
-    'https://react-http-13cfc-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json' + query,
-  );
-  const responseData = await response.json();
-  const loadedIngredients = [];
-  for (const key in responseData) {
-    loadedIngredients.push({
-      id: key,
-      title: responseData[key].title,
-      amount: responseData[key].amount,
-    });
-  }
-  callback(loadedIngredients);
-};
 
 const Search = React.memo((props) => {
   const { onLoadIngredients } = props;
   const [searchName, setSearchName] = useState('');
-  const [load, setLoad] = useState(false);
   const nameInputRef = useRef();
+  const { isLoading, data, error, sendRequest, clear } = useHttp();
 
   useEffect(() => {
-    setLoad(true);
     const timer = setTimeout(async () => {
       if (searchName !== nameInputRef.current.value) {
         return;
       }
-      await fetchIngredients(searchName, onLoadIngredients);
-      setLoad(false);
+      const query = searchName.length === 0 ? '' : `?orderBy="title"&equalTo="${searchName}"`;
+      sendRequest(
+        'https://react-http-13cfc-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json' + query,
+        'GET',
+      );
     }, 500);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [searchName, onLoadIngredients, nameInputRef]);
+  }, [searchName, nameInputRef, sendRequest]);
+
+  useEffect(() => {
+    if (!isLoading && !error && data) {
+      const loadedIngredients = [];
+      for (const key in data) {
+        loadedIngredients.push({
+          id: key,
+          title: data[key].title,
+          amount: data[key].amount,
+        });
+      }
+      onLoadIngredients(loadedIngredients);
+    }
+  }, [isLoading, data, error, onLoadIngredients]);
 
   const enteredNameHandler = (event) => {
     setSearchName(event.target.value);
@@ -48,12 +49,13 @@ const Search = React.memo((props) => {
 
   return (
     <section className="search">
+      {error && <ErrorModal onClose={clear}>{error}</ErrorModal>}
       <Card>
         <div className="search-input">
           <label>
             <b>Filter by Title</b>
           </label>
-          {load && <LoadingIndicator />}
+          {isLoading && <LoadingIndicator />}
           <input type="text" value={searchName} ref={nameInputRef} onChange={enteredNameHandler} />
         </div>
       </Card>

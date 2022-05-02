@@ -28,71 +28,46 @@ const initialIngredientsState = {
 }
 */
 const Ingredients = () => {
-  const { isLoading, searching, data, error, sendRequest } = useHttp();
+  const { isLoading, searching, data, error, sendRequest, reqExtra, reqIdentifier, clear } = useHttp();
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
-  // const [userIngredients, setUserIngredients] = useState([]);
-
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [isSearching, setIsSearching] = useState(false);
-  // const [error, setError] = useState();
 
   useEffect(() => {
-    console.log('Rendering Ingredients', userIngredients);
-  }, [userIngredients]);
+    if (!isLoading && !error && reqIdentifier === 'REMOVE_INGREDIENT') {
+      dispatch({ type: 'DELETE', id: reqExtra });
+    } else if (!isLoading && !error && reqIdentifier === 'ADD_INGREDIENT') {
+      dispatch({ type: 'ADD', ingredient: { id: data.name, ...reqExtra } });
+    }
+  }, [data, reqExtra, reqIdentifier, isLoading, error]);
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
-    // setUserIngredients(filteredIngredients);
     dispatch({ type: 'SET', ingredients: filteredIngredients });
   }, []);
 
-  const addIngredientHandler = useCallback(async (ingredient) => {
-    // dispatchHttp({ type: 'SEND' });
-    // try {
-    //   const response = await fetch(
-    //     'https://react-http-13cfc-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json',
-    //     {
-    //       method: 'POST',
-    //       body: JSON.stringify(ingredient),
-    //       headers: { 'Content-Type': 'application/json' },
-    //     },
-    //   );
-    //   const data = await response.json();
-    //   // setUserIngredients((prevState) => [...prevState, { id: data.name, ...ingredient }]);
-    //   dispatch({ type: 'ADD', ingredient: { id: data.name, ...ingredient } });
-    //   dispatchHttp({ type: 'RESPONSE' });
-    // } catch (error) {
-    //   dispatchHttp({ type: 'ERROR', errorMessage: 'Something went wront when sending!' });
-    // }
-  }, []);
+  const addIngredientHandler = useCallback(
+    async (ingredient) => {
+      sendRequest(
+        'https://react-http-13cfc-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json',
+        'POST',
+        JSON.stringify(ingredient),
+        ingredient,
+        'ADD_INGREDIENT',
+      );
+    },
+    [sendRequest],
+  );
 
   const removeIngredientHandler = useCallback(
     async (ingredientId) => {
       sendRequest(
         `https://react-http-13cfc-default-rtdb.europe-west1.firebasedatabase.app//ingredients/${ingredientId}.json`,
         'DELETE',
+        null,
+        ingredientId,
+        'REMOVE_INGREDIENT',
       );
-      // dispatchHttp({ type: 'SEARCH' });
-      // try {
-      //   await fetch(
-      //     `https://react-http-13cfc-default-rtdb.europe-west1.firebasedatabase.app//ingredients/${ingredientId}.json`,
-      //     {
-      //       method: 'DELETE',
-      //     },
-      //   );
-      //   // setUserIngredients((prevState) => prevState.filter((ingredient) => ingredient.id !== ingredientId));
-      //   dispatch({ type: 'DELETE', id: ingredientId });
-      // } catch (error) {
-      //   dispatchHttp({ type: 'ERROR', errorMessage: 'Something went wrong when removing!' });
-      // }
-      // dispatchHttp({ type: 'RESPONSE' });
-      // // setIsSearching(false);
     },
     [sendRequest],
   );
-
-  const clearError = useCallback(() => {
-    // dispatchHttp({ type: 'CLEAR' });
-  }, []);
 
   const ingredientList = useMemo(() => {
     return (
@@ -102,7 +77,7 @@ const Ingredients = () => {
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {error && <ErrorModal onClose={clear}>{error}</ErrorModal>}
 
       <IngredientForm onAddIngredient={addIngredientHandler} loading={isLoading} />
 

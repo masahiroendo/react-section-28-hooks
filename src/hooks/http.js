@@ -1,32 +1,38 @@
 import { useReducer, useCallback } from 'react';
 
+const initialState = {
+  loading: false,
+  searching: false,
+  error: null,
+  data: null,
+  extra: null,
+  identifier: null,
+};
+
 const httpReducer = (currentHttpState, action) => {
   switch (action.type) {
     case 'SEND':
-      return { ...currentHttpState, loading: true };
+      return { ...currentHttpState, loading: true, extra: null, identifier: action.identifier };
     case 'RESPONSE':
-      return { ...currentHttpState, loading: false, searching: false, data: action.responseData };
-    case 'SEARCH':
-      return { ...currentHttpState, searching: true };
+      return { ...currentHttpState, loading: false, searching: false, data: action.responseData, extra: action.extra };
     case 'ERROR':
       return { loading: false, searching: false, error: action.errorMessage };
     case 'CLEAR':
-      return { ...currentHttpState, error: null };
+      return initialState;
     default:
       throw new Error('Should not be reached!');
   }
 };
 
 const useHttp = () => {
-  const [httpState, dispatchHttp] = useReducer(httpReducer, {
-    loading: false,
-    searching: false,
-    error: null,
-    data: null,
-  });
+  const [httpState, dispatchHttp] = useReducer(httpReducer, initialState);
 
-  const sendRequest = useCallback(async (url, method, body) => {
-    dispatchHttp({ type: 'SEND' });
+  const clear = useCallback(() => {
+    dispatchHttp({ type: 'CLEAR' });
+  }, []);
+
+  const sendRequest = useCallback(async (url, method, body, reqExtra, reqIdentifier) => {
+    dispatchHttp({ type: 'SEND', identifier: reqIdentifier });
     try {
       const response = await fetch(url, {
         method: method,
@@ -34,7 +40,7 @@ const useHttp = () => {
         header: { 'Content-Type': 'application/json' },
       });
       const responseData = await response.json();
-      dispatchHttp({ type: 'RESPONSE', responseData: responseData });
+      dispatchHttp({ type: 'RESPONSE', responseData: responseData, extra: reqExtra });
     } catch (error) {
       dispatchHttp({ type: 'ERROR', errorMessage: 'Something went wrong when removing!' });
     }
@@ -42,10 +48,12 @@ const useHttp = () => {
 
   return {
     isLoading: httpState.loading,
-    searching: httpState.searching,
     sendRequest: sendRequest,
     data: httpState.data,
     error: httpState.error,
+    reqExtra: httpState.extra,
+    reqIdentifier: httpState.identifier,
+    clear: clear,
   };
 };
 
