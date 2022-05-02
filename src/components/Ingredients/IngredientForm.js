@@ -7,6 +7,7 @@ import './IngredientForm.css';
 const IngredientForm = React.memo((props) => {
   const [enteredTitle, setEnteredTitle] = useState('');
   const [enteredAmount, setEnteredAmount] = useState(0);
+  console.log('RENDERING INGREDIENT FORM');
 
   const resetForm = () => {
     setEnteredTitle('');

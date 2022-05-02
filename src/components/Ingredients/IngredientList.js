@@ -3,9 +3,10 @@ import LoadingIndicator from '../UI/LoadingIndicator';
 
 import './IngredientList.css';
 
-const IngredientList = (props) => {
+const IngredientList = React.memo((props) => {
   const { ingredients, searching } = props;
   const onIngredientClicked = (ig) => props.onRemoveItem(ig.id);
+  console.log('RENDERING INGREDIENT LIST');
 
   return (
     <section className="ingredient-list">
@@ -21,6 +22,6 @@ const IngredientList = (props) => {
       </ul>
     </section>
   );
-};
+});
 
 export default IngredientList;
